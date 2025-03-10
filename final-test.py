@@ -3,6 +3,14 @@ import mediapipe as mp
 import numpy as np
 from PIL import Image
 import tensorflow as tf
+import boto3
+import time
+
+
+# Cấu hình AWS
+S3_BUCKET = "handwriting-recognition-bucket"
+AWS_REGION = "us-east-1"  
+s3 = boto3.client("s3")
 
 # Load the handwriting recognition model
 model = tf.keras.models.load_model('emnist_handwriting_model.h5')  
@@ -27,6 +35,9 @@ mp_hands = mp.solutions.hands
 
 # Open the webcam.
 cap = cv2.VideoCapture(0)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)  # Tăng chiều rộng
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)  # Tăng chiều cao
+
 
 # Create a blank image for drawing.
 drawing_image = np.zeros((480, 640, 3), dtype=np.uint8)
@@ -137,7 +148,7 @@ with mp_hands.Hands(
         flipped_image = cv2.flip(combined_image, 1)  # Flip for display only
 
     # Add text at the top right of the screen
-        text1 = "Xu ly anh va thi giac may tinh - 010100086901"
+        text1 = "Dien toan dam may - 010100087101"
         text2 = "Nhom 6"
         font = cv2.FONT_HERSHEY_SIMPLEX
         font_scale = 0.8
@@ -183,6 +194,10 @@ with mp_hands.Hands(
 
             # Run handwriting recognition on the saved screenshot
             recognize_handwriting(screenshot_filename)
+
+             # Upload ảnh lên AWS S3
+            s3.upload_file(screenshot_filename, S3_BUCKET, screenshot_filename)
+            print(f"✅ Đã upload {screenshot_filename} lên S3!")
 
             screenshot_counter += 1
         elif key & 0xFF == 27:

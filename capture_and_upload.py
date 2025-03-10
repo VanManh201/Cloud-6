@@ -2,8 +2,8 @@ import cv2
 import numpy as np
 import tensorflow as tf
 import boto3
-from PIL import Image
 import time
+from PIL import Image
 
 # Cấu hình AWS
 S3_BUCKET = "handwriting-recognition-bucket"
